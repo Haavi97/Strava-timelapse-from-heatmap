@@ -1,0 +1,7 @@
+pyautogui==0.9.54
+Pillow==10.2.0
+python-dateutil==2.8.2
+screeninfo==0.8.1
+mss==9.0.1
+opencv-python==4.8.1.78
+numpy==1.26.3
