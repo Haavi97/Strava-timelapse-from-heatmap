@@ -16,7 +16,7 @@ This project contains a set of Python scripts to automatically create a timelaps
 
 1. Clone this repository or download the script files:
 ```bash
-git clone [url]
+git clone https://github.com/Haavi97/Strava-timelapse-from-heatmap
 cd strava-heatmap-timelapse
 ```
 
