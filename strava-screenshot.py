@@ -25,7 +25,14 @@ def get_second_monitor_bounds():
                 "height": monitor.height
             }
         else:
-            raise Exception("Second monitor not found")
+            # Get the first monitor
+            monitor = monitors[0]
+            return {
+                "top": monitor.y,
+                "left": monitor.x,
+                "width": monitor.width,
+                "height": monitor.height
+            }
     except Exception as e:
         print(f"Error getting monitor info: {str(e)}")
         return None
@@ -107,16 +114,21 @@ def main():
         time.sleep(1)
     
     # Example usage for a date range
-    start_date = "2024-10-09"
-    end_date = "2024-11-21"  # Change this to your desired end date
+    start_date = "2023-01-01"
+    end_date = "2023-01-03"  # Change this to your desired end date
     
     dates = generate_date_range(start_date, end_date)
     
     total_dates = len(dates)
+    print(f"Estimated time to process each date: {sleep_time + 1} seconds")
+    print(f"Total estimated time: {(sleep_time+1)*total_dates} seconds")
+    starting_time = datetime.now()
     for index, date in enumerate(dates, 1):
         print(f"\nProcessing {index}/{total_dates}: {date}")
         take_strava_screenshot(date, monitor_bounds)
         print(f"Completed {index}/{total_dates}")
+    finishing_time = datetime.now()
+    print(f"\nAll dates processed in {finishing_time - starting_time}")
 
 if __name__ == "__main__":
     main()
