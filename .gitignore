@@ -1,3 +1,6 @@
 /screenshots/
 /cropped_screenshots/
 *.mp4
+*.csv
+screenshot_metadata.json
+venv

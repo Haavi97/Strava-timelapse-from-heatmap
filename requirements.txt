@@ -5,3 +5,4 @@ screeninfo==0.8.1
 mss==9.0.1
 opencv-python==4.8.1.78
 numpy==1.26.3
+pandas==2.1.4

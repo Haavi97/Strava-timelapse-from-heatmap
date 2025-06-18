@@ -1,9 +1,9 @@
 # Strava Heatmap Timelapse Generator
 
-This project contains a set of Python scripts to automatically create a timelapse video from Strava heatmaps. The process involves three main steps:
-1. Capturing screenshots from Strava
+This project contains a set of Python scripts to automatically create a timelapse video from Strava heatmaps based on activities from a CSV export. The process involves three main steps:
+1. Reading Strava activities from CSV and capturing screenshots for relevant dates
 2. Cropping the screenshots to focus on the map
-3. Creating a timelapse video with date overlays
+3. Creating a timelapse video with date overlays and accumulated statistics
 
 ## Prerequisites
 
@@ -11,12 +11,22 @@ This project contains a set of Python scripts to automatically create a timelaps
 - Web browser
 - Active Strava account (must be logged in before running the scripts)
 - Multiple monitors setup (script uses second monitor for captures)
+- Strava data export CSV file named `TallinnStreets.csv`
+
+## CSV File Requirements
+
+The script expects a CSV file named `TallinnStreets.csv` with your Strava activity data. The script will:
+- Filter activities containing "Tallinn Streets" in the Activity Name
+- Use these activities to determine screenshot dates
+- Calculate accumulated distance and days for video overlays
+
+Required CSV columns: `Activity Date`, `Activity Name`, `Distance`
 
 ## Installation
 
 1. Clone this repository or download the script files:
 ```bash
-git clone https://github.com/Haavi97/Strava-timelapse-from-heatmap
+git clone [your-repository-url]
 cd strava-heatmap-timelapse
 ```
 
@@ -31,15 +41,19 @@ source venv/bin/activate  # On Windows, use: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+4. Place your `TallinnStreets.csv` file in the project directory
+
 ## Project Structure
 
 ```
 strava-heatmap-timelapse/
+├── TallinnStreets.csv (your CSV file)
 ├── strava_screenshot.py
 ├── image_cropper.py
 ├── create_video.py
 ├── requirements.txt
 ├── README.md
+├── screenshot_metadata.json (generated)
 ├── screenshots/
 │   ├── YYYYMMDD.png
 │   └── ...
@@ -53,22 +67,18 @@ strava-heatmap-timelapse/
 
 ### 1. Capture Screenshots (strava_screenshot.py)
 
-This script automates the process of capturing Strava heatmap screenshots:
+This script reads your CSV file and captures screenshots from 2024-01-01 to each activity date:
 
 ```bash
-python strava_screenshot.py
+python strava-screenshot.py
 ```
 
 Features:
-- Automatically navigates to Strava heatmap URLs
+- Reads `TallinnStreets.csv` and filters for activities containing "Tallinn Streets"
+- Generates screenshots from start date to each activity date
 - Captures screenshots from second monitor
-- Saves dated screenshots (YYYYMMDD.png format)
-- Handles multiple dates automatically
-
-Safety Notes:
-- Don't move mouse or use keyboard while script is running
-- Keep browser window active on second monitor
-- Ensure you're logged into Strava before starting
+- Saves dated screenshots and metadata for video creation
+- Shows progress with accumulated distance and days
 
 ### 2. Crop Screenshots (image_cropper.py)
 
@@ -84,16 +94,9 @@ Features:
 - Batch processing of all screenshots
 - Preserves original files
 
-Usage:
-1. Click and drag to select crop area
-2. Use buttons or keyboard shortcuts:
-   - Enter: Confirm selection
-   - R: Reset selection
-3. Original images are preserved, cropped versions saved to new folder
-
 ### 3. Create Timelapse (create_video.py)
 
-This script combines the cropped images into a video with date overlays:
+This script combines the cropped images into a video with multiple overlays:
 
 ```bash
 python create_video.py
@@ -101,45 +104,82 @@ python create_video.py
 
 Features:
 - Creates MP4 video from screenshots
-- Adds date overlay to bottom right
-- Semi-transparent background for date
-- Configurable FPS and date format
-
+- Date overlay (bottom right)
+- Accumulated distance overlay (bottom left)
+- Accumulated days overlay (above distance)
+- Semi-transparent backgrounds for all overlays
+- Uses metadata from screenshot capture process
 ## Customization
 
 ### Screenshot Script
-- Modify `start_date` and `end_date` in main()
-- Adjust sleep times if needed
-- Change URL parameters for different map styles
+- CSV file location: Change the filename in `load_tallinn_streets_data()`
+- Activity filter: Modify the string filter in the CSV processing
+- Start date: Change the default start date in `generate_screenshot_dates()`
+- URL parameters: Adjust map style, zoom level in the base URL
 
 ### Cropping Script
-- Adjust window size handling
-- Modify selection tool colors
-- Change output folder name
+- Window size handling: Adjust scaling factors
+- Selection tool colors: Modify rectangle outline color
+- Output folder: Change the output directory name
 
 ### Video Creation
-- Adjust FPS (default: 3)
-- Change date format
-- Modify text position and style
-- Adjust background opacity
+- FPS: Adjust video speed (default: 2)
+- Date format: Change date display format
+- Overlay positions: Modify text positioning
+- Font settings: Adjust size, thickness, color
+- Background opacity: Change transparency level
+
+## Data Flow
+
+1. **CSV Processing**: Script reads `TallinnStreets.csv` and filters activities
+2. **Date Generation**: Creates screenshot dates from start date to each activity
+3. **Metadata Creation**: Saves `screenshot_metadata.json` with accumulated stats
+4. **Screenshot Capture**: Takes screenshots for each date
+5. **Image Cropping**: Processes all screenshots with consistent crop
+6. **Video Creation**: Combines images with overlays using metadata
 
 ## Troubleshooting
 
-1. Screenshot Issues:
+1. **CSV Issues**:
+   - Ensure file is named exactly `TallinnStreets.csv`
+   - Check that Activity Name column contains "Tallinn Streets" entries
+   - Verify Date and Distance columns are properly formatted
+
+2. **Screenshot Issues**:
    - Ensure second monitor is properly detected
-   - Check if browser is active window
+   - Check if browser is active window on second monitor
    - Verify Strava login status
-   - Try increasing sleep times
+   - Try increasing sleep times if pages load slowly
 
-2. Cropping Issues:
-   - Make sure screenshots folder exists
-   - Check if images are readable
-   - Verify sufficient disk space
+3. **Video Creation Issues**:
+   - Ensure `screenshot_metadata.json` exists (created by screenshot script)
+   - Check if cropped_screenshots folder exists and contains images
+   - Verify all images are properly named (YYYYMMDD.png format)
 
-3. Video Creation Issues:
-   - Verify cropped_screenshots folder exists
-   - Check if all images are properly named
-   - Ensure sufficient memory for video creation
+## Output Information
+
+The final video will display:
+- **Bottom Right**: Date of the screenshot
+- **Bottom Left**: Accumulated kilometers from all "Tallinn Streets" activities up to that date
+- **Above Distance**: Day number (number of activities completed)
+
+## Example Workflow
+
+1. Export your Strava data and save as `TallinnStreets.csv`
+2. Run screenshot script: captures all relevant dates
+3. Run cropping script: select map area once, applies to all
+4. Run video script: creates timelapse with statistics
+
+## Dependencies
+
+Main dependencies (see requirements.txt for versions):
+- pandas: CSV data processing
+- pyautogui: Screen control and automation
+- Pillow: Image processing
+- mss: Multi-monitor screen capture
+- opencv-python: Video creation and overlay rendering
+- screeninfo: Monitor detection
+- numpy: Numerical operations
 
 ## Contributing
 
@@ -151,18 +191,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Notes
 
-- The scripts assume a consistent monitor setup
+- The scripts assume your activities contain "Tallinn Streets" in the name
 - Screenshots are taken from the second monitor
-- Files are processed in alphabetical order
-- Dates are extracted from filenames
+- Files are processed in chronological order
+- Metadata is preserved between scripts for accurate statistics
 - Original files are preserved at each step
-
-## Dependencies
-
-Main dependencies (see requirements.txt for versions):
-- pyautogui: For screen control
-- Pillow: Image processing
-- mss: Screen capture
-- opencv-python: Video creation
-- screeninfo: Monitor detection
-- numpy: Image processing

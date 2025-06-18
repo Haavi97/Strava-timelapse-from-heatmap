@@ -9,6 +9,7 @@ class CropSelector:
         self.root = tk.Tk()
         self.root.title("Crop Selector")
         
+        # Load the image
         self.image = Image.open(image_path)
         # Resize if the image is too large for screen
         screen_width = self.root.winfo_screenwidth() - 100
@@ -28,6 +29,7 @@ class CropSelector:
             
         self.photo = ImageTk.PhotoImage(self.display_image)
         
+        # Create canvas
         self.canvas = tk.Canvas(
             self.root,
             width=self.display_image.width,
@@ -35,6 +37,7 @@ class CropSelector:
         )
         self.canvas.pack(side=tk.LEFT)
         
+        # Display image on canvas
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
         
         # Variables for crop rectangle
@@ -100,11 +103,13 @@ class CropSelector:
         self.update_coord_label(event.x, event.y)
         
     def update_coord_label(self, current_x, current_y):
+        # Get coordinates and adjust for scale
         x1 = min(self.start_x, current_x) / self.scale
         y1 = min(self.start_y, current_y) / self.scale
         x2 = max(self.start_x, current_x) / self.scale
         y2 = max(self.start_y, current_y) / self.scale
         
+        # Update label with real coordinates
         self.coord_label.config(
             text=f"Left: {int(x1)}\nTop: {int(y1)}\n"
                  f"Right: {int(x2)}\nBottom: {int(y2)}"
@@ -128,9 +133,11 @@ class CropSelector:
 
 def crop_images(input_folder="screenshots", output_folder="cropped_screenshots"):
     """Process all PNG files in the input folder and save cropped versions"""
+    # Create output folder if it doesn't exist
     output_path = Path(output_folder)
     output_path.mkdir(exist_ok=True)
     
+    # Get all PNG files
     input_path = Path(input_folder)
     png_files = sorted(list(input_path.glob("*.png")))
     
@@ -140,6 +147,7 @@ def crop_images(input_folder="screenshots", output_folder="cropped_screenshots")
     
     print(f"Found {len(png_files)} PNG files to process")
     
+    # Get crop coordinates using the first image
     print("\nOpening coordinate selector...")
     selector = CropSelector(png_files[0])
     crop_bounds = selector.get_coordinates()
@@ -150,6 +158,7 @@ def crop_images(input_folder="screenshots", output_folder="cropped_screenshots")
         
     print(f"\nUsing crop bounds: {crop_bounds}")
     
+    # Process all images with selected bounds
     for png_file in png_files:
         try:
             with Image.open(png_file) as img:
